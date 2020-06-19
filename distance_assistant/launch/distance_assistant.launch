@@ -1,0 +1,85 @@
+<launch>
+<!-- Realsense parameters -->
+<arg name="align_depth"     default="true"/>
+<arg name="width"           default="1280"/>
+<arg name="height"          default="720"/>
+<arg name="fps"             default="15"/>
+
+<!-- Distance Assistant parameters -->
+<arg name="confidence_thr"   default="0.6"/>
+<arg name="distance_thr"     default="2"/>
+<arg name="max_distance"     default="8.0"/>
+<arg name="publish_vis"      default="true"/>
+<arg name="show_distances"   default="false"/>
+<arg name="show_cross_distances" default="false"/>
+<arg name="draw_bbox"        default="false"/>
+<arg name="draw_circle"      default="true"/>
+<arg name="enable_temporal_filter"      default="true"/>
+<arg name="min_hits"         default="7"/>
+<arg name="max_age"          default="3"/>
+
+<!-- if set True, camera extrinsics are computed from IMU and Depth Data-->
+<arg name="auto_calibrate"        default="true"/>
+<!-- number of IMU samples that will be used for calibration-->
+<arg name="num_imu_samples"       default="200"/>
+<!-- number of continues depth frames that will be used for calibration-->
+<arg name="num_depth_samples"     default="50"/>
+<!-- moving average filter weight-->
+<arg name="filter_weight"         default="0.1"/>
+<!-- minimum and maximum camera height settings in meters-->
+<arg name="min_camera_height"     default="0.5"/>
+<arg name="max_camera_height"     default="2.5"/>
+<!-- Depth ROI that will be used for height calibration.
+[top_left, top_left_y, bottom_right_x, bottom_right_y]-->
+<arg name="calibration_roi" default="[560, 630, 720, 720]"/>
+<!-- If auto calibrate is set to false, use following parameters to configure the
+camera extrinsics-->
+<arg name="camera_pitch"         default="10"/>
+<arg name="camera_roll"          default="0"/>
+<arg name="camera_height"        default="1.8"/>
+
+<node pkg="distance_assistant" name="distance_assistant" type="distance_assistant_node.py" output="screen">
+    <param name="confidence_thr" value="$(arg confidence_thr)" />
+    <param name="distance_thr" value="$(arg distance_thr)" />
+    <param name="publish_vis" value="$(arg publish_vis)" />
+    <param name="show_distances" value="$(arg show_distances)"/>
+    <param name="show_cross_distances" value="$(arg show_cross_distances)"/>
+    <param name="use_opencv_rgbd" value="$(arg use_opencv_rgbd"/>
+    <param name="draw_bbox" value="$(arg draw_bbox)"/>
+    <param name="draw_circle" value="$(arg draw_circle"/>
+    <param name="max_distance" value="$(arg max_distance)"/>
+    <param name="auto_calibrate" value="$(arg auto_calibrate)"/>
+    <param name="num_imu_samples" value="$(arg num_imu_samples)"/>
+    <param name="num_depth_samples" value="$(arg num_depth_samples)"/>
+    <param name="filter_weight" value="$(arg filter_weight)"/>
+    <param name="min_camera_height" value="$(arg min_camera_height)"/>
+    <param name="max_camera_height" value="$(arg max_camera_height)"/>
+    <param name="calibration_roi" value="$(arg calibration_roi)"/>
+    <param name="camera_pitch" value="$(arg camera_pitch)"/>
+    <param name="camera_roll" value="$(arg camera_roll)"/>
+    <param name="camera_height" value="$(arg camera_height)"/>
+    <param name="enable_temporal_filter" value="$(arg enable_temporal_filter)"/>
+    <param name="min_hits" value="$(arg min_hits)"/>
+    <param name="max_age" value="$(arg max_age)"/>
+</node>
+
+<include file="$(find realsense2_camera)/launch/rs_camera.launch" >
+    <arg name="align_depth"  value="$(arg align_depth)"/>
+    <arg name="depth_width"  value="$(arg width)"/>
+    <arg name="depth_height" value="$(arg height)"/>
+    <arg name="infra_width"  value="$(arg width)"/>
+    <arg name="infra_height" value="$(arg height)"/>
+    <arg name="color_width"  value="$(arg width)"/>
+    <arg name="color_height" value="$(arg height)"/>
+    <arg name="infra_fps"    value="$(arg fps)"/>
+    <arg name="depth_fps"    value="$(arg fps)"/>
+    <arg name="color_fps"    value="$(arg fps)"/>
+</include>
+
+<node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <remap from="image" to="/distance_assistant/vis_img" />
+</node>
+
+<!-- For local development, you likely want to uncoment the rviz node -->
+<!--<node type="rviz" name="rviz" pkg="rviz" args="-d $(find distance_assistant)/rviz/config_file.rviz" />-->
+</launch>

@@ -1,0 +1,4 @@
+uint16 top_left_x
+uint16 top_left_y
+uint16 bottom_right_x
+uint16 bottom_right_y
