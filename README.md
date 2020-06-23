@@ -97,6 +97,7 @@ During the application startup we perform an automated calibration step which co
 To execute a locally built docker image,
 
 ```bash
+# IMPORTANT!!
 # allow connections to X server
 xhost +local:root
 
