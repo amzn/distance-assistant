@@ -123,6 +123,17 @@ docker run \
     distance_assistant/prototype
 ```
 
+## Visualization
+
+To access the Distance Assistant, use the `rviz` tool.
+
+On Ubuntu, install it by running
+```bash
+sudo apt-get install rviz
+```
+
+Then, run `rviz` and open the `config_file.rviz` file in the `distance_assistant/rviz` directory.
+
 # Troubleshooting
 
 ## Display Failures
