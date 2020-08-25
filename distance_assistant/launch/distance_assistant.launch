@@ -4,6 +4,8 @@
 <arg name="width"           default="1280"/>
 <arg name="height"          default="720"/>
 <arg name="fps"             default="15"/>
+<arg name="enable_gyro"     default="true"/>
+<arg name="enable_accel"    default="true"/>
 
 <!-- Distance Assistant parameters -->
 <arg name="confidence_thr"   default="0.6"/>
@@ -74,6 +76,8 @@ camera extrinsics-->
     <arg name="infra_fps"    value="$(arg fps)"/>
     <arg name="depth_fps"    value="$(arg fps)"/>
     <arg name="color_fps"    value="$(arg fps)"/>
+    <arg name="enable_accel" value="$(arg enable_accel)"/>
+    <arg name="enable_gyro"  value="$(arg enable_gyro)"/>
 </include>
 
 <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
