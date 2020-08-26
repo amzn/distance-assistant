@@ -19,6 +19,7 @@
 <arg name="enable_temporal_filter"      default="true"/>
 <arg name="min_hits"         default="7"/>
 <arg name="max_age"          default="3"/>
+<arg name="draw_smiley"      default="true"/>
 
 <!-- if set True, camera extrinsics are computed from IMU and Depth Data-->
 <arg name="auto_calibrate"        default="true"/>
@@ -63,6 +64,9 @@ camera extrinsics-->
     <param name="enable_temporal_filter" value="$(arg enable_temporal_filter)"/>
     <param name="min_hits" value="$(arg min_hits)"/>
     <param name="max_age" value="$(arg max_age)"/>
+
+    <!-- Smilies -->
+    <param name="draw_smiley" value="$(arg draw_smiley)" />
 </node>
 
 <include file="$(find realsense2_camera)/launch/rs_camera.launch" >

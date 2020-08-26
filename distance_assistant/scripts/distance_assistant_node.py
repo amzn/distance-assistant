@@ -21,6 +21,7 @@ from darknet_custom import *
 from cv_bridge import CvBridge, CvBridgeError
 from distance_assistant.msg import BboxMsg, DetectionMsg, DetectionsMsg
 import temporal_filter
+import os
 
 
 def parse_array_from_string(list_str, dtype=int):
@@ -121,6 +122,16 @@ class DistanceAssistant:
             '~enable_temporal_filter')
         self.min_hits = rospy.get_param('~min_hits')
         self.max_age = rospy.get_param('~max_age')
+
+        # Init smiley data
+        rospy.loginfo('Cwd is %s', os.getcwd())
+        self.green_smiley_path =\
+            os.path.join(os.getcwd(), '/home/catkin_ws/src/DistanceAssistant/scripts/data/green_smiley.png')
+        self.red_smiley_path =\
+            os.path.join(os.getcwd(), '/home/catkin_ws/src/DistanceAssistant/scripts/data/red_smiley.png')
+        self.green_smiley = None
+        self.red_smiley = None
+        self.draw_smiley = rospy.get_param('~draw_smiley')
 
     def read_manual_calibration_params(self):
         """ Read precomputed camera extrics parameters from file """
@@ -384,6 +395,39 @@ class DistanceAssistant:
                           detection.color.value, 3)
         return vis_img
 
+    def draw_smilies(self, vis_img, detections):
+        """Draw smilies over people in the image.
+
+        Arguments:
+            vis_img: RGB image that will be modified
+            detections: list of person detections
+
+        Returns:
+            vis_img: image with smileys on top of detected people
+        """
+        if self.green_smiley is None:
+            self.green_smiley = cv2.imread(self.green_smiley_path)
+            self.red_smiley = cv2.imread(self.red_smiley_path)
+
+        for _, detection in enumerate(detections):
+            bbox = np.array(detection.bbox)
+            dim = (bbox[2]-bbox[0], bbox[3]-bbox[1])
+
+            if detection.color == Color.GREEN:
+                resized_smiley = cv2.resize(
+                    self.green_smiley, dim, interpolation=cv2.INTER_LINEAR
+                )
+            else:
+                resized_smiley = cv2.resize(
+                    self.red_smiley, dim, interpolation=cv2.INTER_LINEAR
+                )
+
+            h, w, _ = resized_smiley.shape
+            vis_img[bbox[1]:bbox[1]+h, bbox[0]:bbox[0]+w] = resized_smiley
+
+        return vis_img
+            
+
     def draw_circles(self, vis_img, detections):
         """Draw projected circles in the visualization image.
 
@@ -547,6 +591,8 @@ class DistanceAssistant:
         self.compute_proximities(detections)
         if (self.publish_vis):
             vis_img = np.copy(orig_img)
+            if self.draw_smiley:
+                vis_img = self.draw_smilies(vis_img, detections)
             if self.draw_circle:
                 vis_img = self.draw_circles(vis_img, detections)
             if self.draw_bbox:
