@@ -122,6 +122,17 @@ class DistanceAssistant:
         self.min_hits = rospy.get_param('~min_hits')
         self.max_age = rospy.get_param('~max_age')
 
+        # Init smiley data
+        self.green_smiley_path = rospy.get_param('~green_smiley_filename')
+        self.red_smiley_path = rospy.get_param('~red_smiley_filename')
+        self.green_smiley = None
+        self.green_smiley_mask = None
+        self.green_smiley_mask_inv = None
+        self.red_smiley = None
+        self.red_smiley_mask = None
+        self.red_smiley_mask_inv = None
+        self.draw_smiley = rospy.get_param('~draw_smiley')
+
     def read_manual_calibration_params(self):
         """ Read precomputed camera extrics parameters from file """
         self.camera_roll = rospy.get_param('~camera_roll') * np.pi / 180.
@@ -373,7 +384,7 @@ class DistanceAssistant:
 
         Arguments:
             vis_img: RGB image that will be modified
-            detections: list of person detections
+            detections: List of person detections
 
         Returns:
             vis_image: image with color-coded bounding boxes
@@ -383,6 +394,83 @@ class DistanceAssistant:
             cv2.rectangle(vis_img, (bbox[0], bbox[1]), (bbox[2], bbox[3]),
                           detection.color.value, 3)
         return vis_img
+
+    def get_smiley_mask(self, img):
+        """ Compute a mask and its inverse from a smiley image.
+
+        Arguments:
+            img: RGB image of the smiley for which to compute a mask.
+        
+        Returns:
+            Tuple with the image mask and its inverse.
+
+        """
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray_img, 200, 255, cv2.THRESH_BINARY_INV)
+
+        return mask, cv2.bitwise_not(mask)
+
+    def load_smilies(self):
+        """ Load the red and gree smiley files, and compute their masks. """
+
+        self.green_smiley = cv2.imread(self.green_smiley_path)
+        self.red_smiley = cv2.imread(self.red_smiley_path)
+        self.green_smiley = cv2.cvtColor(self.green_smiley, cv2.COLOR_RGB2BGR)
+        self.red_smiley = cv2.cvtColor(self.red_smiley, cv2.COLOR_RGB2BGR)
+
+        self.green_smiley_mask, self.green_smiley_mask_inv =\
+            self.get_smiley_mask(self.green_smiley)
+        self.red_smiley_mask, self.red_smiley_mask_inv =\
+            self.get_smiley_mask(self.red_smiley)
+
+
+    def draw_smilies(self, vis_img, detections):
+        """ Draw smilies over people in the image.
+
+        Arguments:
+            vis_img: RGB image that will be modified
+            detections: List of person detections
+
+        Returns:
+            vis_img: image with smileys on top of detected people
+        """
+        if self.green_smiley is None:
+            self.load_smilies()
+
+        for _, detection in enumerate(detections):
+            bbox = np.array(detection.bbox)
+            dim = (bbox[2]-bbox[0], bbox[3]-bbox[1])
+
+            if detection.color == Color.GREEN:
+                smiley = cv2.resize(
+                    self.green_smiley, dim, interpolation=cv2.INTER_LINEAR
+                )
+                mask = cv2.resize(
+                    self.green_smiley_mask, dim, interpolation=cv2.INTER_LINEAR
+                )
+                inv_mask = cv2.resize(
+                    self.green_smiley_mask_inv, dim, interpolation=cv2.INTER_LINEAR
+                )
+            else:
+                smiley = cv2.resize(
+                    self.red_smiley, dim, interpolation=cv2.INTER_LINEAR
+                )
+                mask = cv2.resize(
+                    self.red_smiley_mask, dim, interpolation=cv2.INTER_LINEAR
+                )
+                inv_mask = cv2.resize(
+                    self.red_smiley_mask_inv, dim, interpolation=cv2.INTER_LINEAR
+                )
+
+            h, w, _ = smiley.shape
+            detection_img = vis_img[bbox[1]:bbox[1]+h, bbox[0]:bbox[0]+w]
+            bg = cv2.bitwise_and(detection_img, detection_img, mask=inv_mask)
+            fg = cv2.bitwise_and(smiley, smiley, mask=mask)
+            result = cv2.add(bg, fg)
+            vis_img[bbox[1]:bbox[1]+h, bbox[0]:bbox[0]+w] = result
+
+        return vis_img
+            
 
     def draw_circles(self, vis_img, detections):
         """Draw projected circles in the visualization image.
@@ -547,6 +635,8 @@ class DistanceAssistant:
         self.compute_proximities(detections)
         if (self.publish_vis):
             vis_img = np.copy(orig_img)
+            if self.draw_smiley:
+                vis_img = self.draw_smilies(vis_img, detections)
             if self.draw_circle:
                 vis_img = self.draw_circles(vis_img, detections)
             if self.draw_bbox:

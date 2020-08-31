@@ -125,7 +125,7 @@ docker run \
 
 ## Visualization
 
-To access the Distance Assistant, use the `rviz` tool.
+Distance Assistant should automatically open a video window for you. If it does not, or if you are working on the code and need to connect to the Distance Assistant, you can use the `rviz` tool.
 
 On Ubuntu, install it by running
 ```bash
