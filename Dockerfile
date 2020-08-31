@@ -77,7 +77,9 @@ WORKDIR /home/catkin_ws/src
 RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; catkin_init_workspace /home/catkin_ws/src'
 
 # Get darknet code
-RUN git clone https://github.com/AlexeyAB/darknet.git darknet --depth 1
+RUN git clone https://github.com/AlexeyAB/darknet.git darknet && \
+cd darknet && \
+git checkout bef2844
 
 # Copy Makefile to darknet
 COPY Makefile /home/catkin_ws/src/darknet

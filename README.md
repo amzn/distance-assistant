@@ -24,6 +24,7 @@ This project has been run/tested on a machine with the following specifications/
 * Intel RealSense SDK
     * Intel realsense drivers can be installed by following the directions here: https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md.
     * **Note**: the pre-built dkms drivers provided by Intel did not work for us. We compile the drivers using the instructions in the librealsense README for compilation.
+    * **Note**: if compiling for Ubuntu 20.04 and kernel version 5.4, some scripts need to be patched. Further information can be found in the *librealsense* directory.
 
 **NOTE: It is recommended that the RealSense camera be attached to the PC via a USB 3.1 port with a powered USB hub or an "active" (powered) USB cable. During testing on various PCs, we have seen intermittent issues due to lack of power on the USB port. This can happen across two PCs with the same model number. A powered USB3 hub greatly improves the reliability of the RealSense camera**
 
@@ -121,6 +122,17 @@ docker run \
     -it \
     distance_assistant/prototype
 ```
+
+## Visualization
+
+Distance Assistant should automatically open a video window for you. If it does not, or if you are working on the code and need to connect to the Distance Assistant, you can use the `rviz` tool.
+
+On Ubuntu, install it by running
+```bash
+sudo apt-get install rviz
+```
+
+Then, run `rviz` and open the `config_file.rviz` file in the `distance_assistant/rviz` directory.
 
 # Troubleshooting
 
