@@ -21,7 +21,6 @@ from darknet_custom import *
 from cv_bridge import CvBridge, CvBridgeError
 from distance_assistant.msg import BboxMsg, DetectionMsg, DetectionsMsg
 import temporal_filter
-import os
 
 
 def parse_array_from_string(list_str, dtype=int):
@@ -124,13 +123,14 @@ class DistanceAssistant:
         self.max_age = rospy.get_param('~max_age')
 
         # Init smiley data
-        rospy.loginfo('Cwd is %s', os.getcwd())
-        self.green_smiley_path =\
-            os.path.join(os.getcwd(), '/home/catkin_ws/src/DistanceAssistant/scripts/data/green_smiley.jpg')
-        self.red_smiley_path =\
-            os.path.join(os.getcwd(), '/home/catkin_ws/src/DistanceAssistant/scripts/data/red_smiley.jpg')
+        self.green_smiley_path = rospy.get_param('~green_smiley_filename')
+        self.red_smiley_path = rospy.get_param('~red_smiley_filename')
         self.green_smiley = None
+        self.green_smiley_mask = None
+        self.green_smiley_mask_inv = None
         self.red_smiley = None
+        self.red_smiley_mask = None
+        self.red_smiley_mask_inv = None
         self.draw_smiley = rospy.get_param('~draw_smiley')
 
     def read_manual_calibration_params(self):
@@ -384,7 +384,7 @@ class DistanceAssistant:
 
         Arguments:
             vis_img: RGB image that will be modified
-            detections: list of person detections
+            detections: List of person detections
 
         Returns:
             vis_image: image with color-coded bounding boxes
@@ -396,14 +396,28 @@ class DistanceAssistant:
         return vis_img
 
     def get_smiley_mask(self, img):
+        """ Compute a mask and its inverse from a smiley image.
+
+        Arguments:
+            img: RGB image of the smiley for which to compute a mask.
+        
+        Returns:
+            Tuple with the image mask and its inverse.
+
+        """
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(gray_img, 200, 255, cv2.THRESH_BINARY_INV)
 
         return mask, cv2.bitwise_not(mask)
 
     def load_smilies(self):
+        """ Load the red and gree smiley files, and compute their masks. """
+
         self.green_smiley = cv2.imread(self.green_smiley_path)
         self.red_smiley = cv2.imread(self.red_smiley_path)
+        self.green_smiley = cv2.cvtColor(self.green_smiley, cv2.COLOR_RGB2BGR)
+        self.red_smiley = cv2.cvtColor(self.red_smiley, cv2.COLOR_RGB2BGR)
+
         self.green_smiley_mask, self.green_smiley_mask_inv =\
             self.get_smiley_mask(self.green_smiley)
         self.red_smiley_mask, self.red_smiley_mask_inv =\
@@ -411,10 +425,11 @@ class DistanceAssistant:
 
 
     def draw_smilies(self, vis_img, detections):
-        """Draw smilies over people in the image.
+        """ Draw smilies over people in the image.
 
         Arguments:
-detections
+            vis_img: RGB image that will be modified
+            detections: List of person detections
 
         Returns:
             vis_img: image with smileys on top of detected people

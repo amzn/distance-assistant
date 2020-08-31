@@ -41,6 +41,9 @@ camera extrinsics-->
 <arg name="camera_roll"          default="0"/>
 <arg name="camera_height"        default="1.8"/>
 
+<arg name="green_smiley_filename"   default="/home/catkin_ws/src/DistanceAssistant/scripts/data/green_smiley.jpg" />
+<arg name="red_smiley_filename"     default="/home/catkin_ws/src/DistanceAssistant/scripts/data/red_smiley.jpg" />
+
 <node pkg="distance_assistant" name="distance_assistant" type="distance_assistant_node.py" output="screen">
     <param name="confidence_thr" value="$(arg confidence_thr)" />
     <param name="distance_thr" value="$(arg distance_thr)" />
@@ -67,6 +70,8 @@ camera extrinsics-->
 
     <!-- Smilies -->
     <param name="draw_smiley" value="$(arg draw_smiley)" />
+    <param name="green_smiley_filename" value="$(arg green_smiley_filename)"/>
+    <param name="red_smiley_filename" value="$(arg red_smiley_filename)"/>
 </node>
 
 <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
