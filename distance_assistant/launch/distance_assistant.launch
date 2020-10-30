@@ -5,6 +5,7 @@
 <arg name="height"          default="720"/>
 <arg name="fps"             default="15"/>
 <arg name="enable_accel"    default="true"/>
+<arg name="initial_reset"   default="true"/>
 
 <!-- Distance Assistant parameters -->
 <arg name="confidence_thr"   default="0.6"/>
