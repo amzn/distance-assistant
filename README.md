@@ -267,5 +267,15 @@ sudo ansible-playbook -i "localhost," \
 
 When complete, the system should reboot to a blue screen and then start distance assistant. If you configured a remote repository, the station may need to download the image which will take some time.
 
+## Known Issues:
 
+### Black Screen after booting
+
+Some devices have both Intel and NVidia GPUs, try adjusting which one is being used:
+
+```
+sudo prime-select intel
+```
+
+Then reboot
 
