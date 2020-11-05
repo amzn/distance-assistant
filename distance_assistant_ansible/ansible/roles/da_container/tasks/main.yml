@@ -1,0 +1,116 @@
+---
+########################################
+#
+# download and run da app
+#
+########################################
+
+- name: install utilties
+  apt:
+    name:
+      - jq
+      - v4l-utils
+      - xloadimage
+      - zenity
+    state: present
+
+- name: get current running version
+  shell: "docker inspect da|jq .[0].Config.Image"
+  register: da_container_info
+  ignore_errors: yes
+
+- name: get camera model
+  shell: "usb-devices |grep 'Product=Intel(R) RealSense(TM) Depth Camera'|sed s/'Product=Intel(R) RealSense(TM) Depth Camera'//|awk '{print $2'}"
+  register: get_camera_model
+
+- name: set camera model
+  set_fact:
+    camera_model: "{{ get_camera_model.stdout }}"
+
+- name: create override directory
+  file:
+    path: /home/da/override
+    state: directory
+    mode: 0755
+    owner: da
+
+- name: create speeddbump stop script
+  template:
+    src: stop_da.sh.j2
+    dest: /usr/local/bin/stop_da.sh
+    mode: 0755
+    owner: root
+    group: root
+
+- name: create da run script
+  template:
+    src: run_da.sh.j2
+    dest: /usr/local/bin/run_da.sh
+    mode: 0755
+    owner: root
+    group: root
+
+- name: create da cameras script
+  copy:
+    dest: /usr/local/bin/find_intellisync_cameras.py
+    src: "find_intellisync_cameras.py"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: create reset USB script
+  copy:
+    dest: /usr/local/bin/reset_usb.sh
+    src: "reset_usb.sh"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: create flash_logo.sh script
+  copy:
+    dest: /usr/local/bin/flash_logo.sh
+    src: "flash_logo.sh"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: create social-distancing-signs-24.jpg
+  copy:
+    dest: /usr/local/etc/social-distancing-signs-24.jpg
+    src: "social-distancing-signs-24.jpg"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Create da.service
+  template:
+    src: da_service.j2
+    dest: /lib/systemd/system/da.service
+  register: service
+
+- name: reload systemctl
+  when: service.changed
+  shell: systemctl daemon-reload
+
+- name: Enable da.service
+  service:
+    name: da
+    enabled: yes
+    state: started
+
+- name: install udev rule for bouncing da
+  register: udev_rule
+  copy:
+    src: 99-zzz-da_realsense.rules
+    dest: /etc/udev/rules.d/99-zzz-da_realsense.rules
+
+- name: install udev script
+  register: udev_rule
+  copy:
+    src: da_udev.sh
+    dest: /usr/local/bin/da_udev.sh
+    mode: 0755
+
+- name: reload udev rules
+  when: udev_rule.changed
+  shell: udevadm control --reload-rules

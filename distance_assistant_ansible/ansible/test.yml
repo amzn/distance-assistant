@@ -1,0 +1,11 @@
+- hosts: localhost
+  connection: local
+  become: true
+  tasks:
+  - include_role:
+      name: da_container_build
+      apply:
+        tags:
+          - da_container_build
+    tags:
+      - da_container_build

@@ -1,0 +1,65 @@
+---
+
+########################################
+#
+# create groups
+#
+########################################
+
+- name: create autologin group
+  group:
+    name: autologin
+    state: present
+    gid: 666
+
+########################################
+#
+# distance assistant kiosk user
+#
+########################################
+
+- name: Add the user da
+  user:
+    name: da
+    comment: distance assistant
+    shell: /bin/bash
+    uid: 999
+    groups: autologin,adm
+
+- name: fix da home directory
+  file:
+    path: "/home/da"
+    state: directory
+    owner: da
+    mode: 0755
+
+- name: fix da config dir
+  file:
+    path: "/home/da/.config"
+    state: directory
+    owner: da
+    mode: 0700
+
+- name: fix da cache dir
+  file:
+    path: "/home/da/.cache"
+    state: directory
+    owner: da
+    mode: 0700
+
+- name: remove da from sudo
+  file:
+    dest: /etc/sudoers.d/da
+    state: absent
+
+- name: allow kiosk user to restart da service
+  copy:
+    src: sudoers.d/da_service
+    dest: /etc/sudoers.d/da_service
+
+- name: remove da user from sudo group
+  user:
+    name: "da"
+    append: no
+    groups: sudo
+

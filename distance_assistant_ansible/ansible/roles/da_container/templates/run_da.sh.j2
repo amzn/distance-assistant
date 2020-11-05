@@ -1,0 +1,82 @@
+#!/bin/bash
+
+
+#####
+#
+# don't think we need now that
+# we updated drivers
+#
+# reset usb
+#/usr/local/bin/reset_usb.sh > /dev/null 2>&1
+#
+# wait 10s for camera to reboot
+#sleep 10s
+
+# reload the uvcvideo, if needed/able
+rmmod uvcvideo || true
+modprobe uvcvideo || true
+sleep 1
+
+# load nvidia module, some devices use intel i915 for display
+# and nvidia for gpu accell
+# force nvidia stuff to be ready to go
+modprobe nvidia nvidia_drm nvidia_uvm i2c_nvidia_gpu || true
+[ -x /usr/bin/nvidia-smi ] && nvidia-smi > /dev/null || true
+
+# let things start
+sleep 1
+
+#
+# see what we found
+#
+HAS_NVIDIA=$(lsmod |grep nvidia | wc -l)
+CAMERA_DEVICES=$(/usr/local/bin/find_intellisync_cameras.py)
+CAMERA_MODEL="{{ camera_model }}"
+
+if [ $HAS_NVIDIA -gt 0 ] && [ -n "$CAMERA_DEVICES" ];
+then
+
+# save an image to disk, the intel utils might actually reset the camera sanely
+    rs-save-to-disk
+
+    rm -f rs-save-to-disk-output-Color-metadata.csv \
+          rs-save-to-disk-output-Color.png \
+          rs-save-to-disk-output-Depth-metadata.csv \
+          rs-save-to-disk-output-Depth.png
+
+# NOTE: The realsense camera should be connected to the host.
+    CONTAINER_ID={{ da_container_id }}
+
+    docker pull ${CONTAINER_ID}
+
+    # this is to work around DA not
+    # correctly resizing itself until
+    # it gets a resize event.
+    # display an image (non fullscreen)
+    # when it goes away, a resize is sent
+    /usr/local/bin/flash_logo.sh &
+
+    docker run \
+       --rm \
+       --name da \
+       --gpus=all \
+       --net=host \
+       --privileged \
+       --device=/dev/usb \
+       ${CAMERA_DEVICES} \
+       --env="DISPLAY=:0" \
+       --env="QT_X11_NO_MITSHM=1" \
+       --volume=/home/da/override:/override \
+       --volume=/tmp/.X11-unix:/tmp/.X11-unix:rw \
+       ${CONTAINER_ID}
+
+else
+    zenity --display :0 \
+	   --info \
+           --title "Hardware not detected" \
+           --text "Check hardware, either no NVIDIA gpu or no realsense cameras detected."
+fi
+
+
+# stop prior versions of the service
+/usr/local/bin/stop_da.sh || true

@@ -1,0 +1,26 @@
+---
+########################################
+#
+# enable sshd
+#
+########################################
+
+- name: Install sshd
+  when: ansible_distribution == "Ubuntu"
+  apt:
+    name:
+      - openssh-server
+      - openssh-client
+    state: present
+
+########################################
+#
+# enable sshd
+#
+########################################
+
+- name: Enable sshd
+  service:
+    name: ssh
+    enabled: yes
+    state: started

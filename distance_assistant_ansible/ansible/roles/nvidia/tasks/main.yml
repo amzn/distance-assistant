@@ -1,0 +1,70 @@
+---
+#
+# cloned from : https://code.amazon.com/packages/RAIRobInInfrastructure/blobs/dev/--/ami/ansible/roles/compute/tasks/gpu.yml?raw=1
+#
+# Documentation:
+# nvidia-docker: https://nvidia.github.io/nvidia-docker/
+# cuda: https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
+
+- name: check for nvidia gpu
+  shell: lspci | grep -i 'nvidia'
+  ignore_errors: yes
+  register: have_gpu
+
+- name: nvidia gpu status
+  debug:
+    msg: No Nvidia GPU found. Skipping GPU set up.
+  when: have_gpu.rc != 0
+
+- name: install nvidia docker tools
+  block:
+  - name: nvidia-docker add apt key
+    apt_key:
+      url:  https://nvidia.github.io/nvidia-docker/gpgkey
+
+  - name: install curl
+    apt:
+      name:
+        - curl
+
+  - name: nvidia-docker | add apt repos
+    shell: curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu18.04/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list
+
+  - name: install nvidia-container packages
+    apt:
+      name:
+        - nvidia-container-toolkit
+        - nvidia-container-runtime
+      state: present
+      update_cache: yes
+
+- name: install nvidia drivers
+  when: have_gpu.rc == 0
+  block:
+
+  - name: add nvidia drivers repo
+    apt_repository:
+      repo: 'ppa:graphics-drivers'
+      codename: bionic
+
+  - name: install nvidia drivers
+    apt:
+      name:
+        - nvidia-driver-450
+        - dkms
+      state: present
+      update_cache: yes
+
+  - name: update docker daemon config
+    copy:
+      src: "daemon.gpu.json"
+      dest: /etc/docker/daemon.json
+
+  - name: create /etc/modules-load.d/nvidia
+    copy:
+      dest: /etc/modules-load.d/nvidia
+      content: nvidia
+
+  - name: nvidia install status
+    debug:
+      msg:  GPU setup. Reboot your computer to use new GPU drivers.

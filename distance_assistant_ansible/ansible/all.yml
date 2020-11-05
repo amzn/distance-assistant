@@ -1,0 +1,97 @@
+- hosts: localhost
+  connection: local
+  become: true
+  tasks:
+  - include_role:
+      name: ssh
+      apply:
+        tags:
+          - ssh
+    tags:
+      - ssh
+
+  - include_role:
+      name: set_53_kernel
+      apply:
+        tags:
+          - set_53_kernel
+    tags:
+      - set_53_kernel
+
+  - include_role:
+      name: docker
+      apply:
+        tags:
+          - docker
+    tags:
+      - docker
+
+  - include_role:
+      name: nvidia
+      apply:
+        tags:
+          - nvidia
+    tags:
+      - nvidia
+
+  - include_role:
+      name: realsense
+      apply:
+        tags:
+          - realsense
+    tags:
+      - realsense
+
+  - include_role:
+      name: users
+      apply:
+        tags:
+          - users
+    tags:
+      - users
+
+  - include_role:
+      name: usb-reset
+      apply:
+        tags:
+          - usb-reset
+    tags:
+      - usb-reset
+
+  - include_role:
+      name: da_container_build
+      apply:
+        tags:
+          - da_container_build
+    tags:
+      - da_container_build
+
+  - include_role:
+      name: da_container
+      apply:
+        tags:
+          - da_container
+    tags:
+      - da_container
+
+  - include_role:
+      name: da_kiosk
+      apply:
+        tags:
+          - da_kiosk
+    tags:
+      - da_kiosk
+
+
+##############################
+#
+# this must be last
+#
+##############################
+  - include_role:
+      name: reboot
+      apply:
+        tags:
+          - reboot
+    tags:
+      - reboot

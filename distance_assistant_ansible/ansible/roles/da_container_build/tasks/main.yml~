@@ -1,0 +1,15 @@
+---
+########################################
+#
+# download and run da app
+#
+########################################
+
+- name: install utilties
+  apt:
+    name:
+      - nvidia-container-runtime
+    state: present
+
+- name: build distance assistant container
+  shell: "docker build --network=host -t distance_assistant/prototype {{ distance_assistant_directory }}"

@@ -1,0 +1,51 @@
+---
+########################################
+#
+# docker
+#
+########################################
+
+- name: Install docker
+  apt:
+    name:
+      - docker.io
+
+- name: check for nvidia gpu
+  shell: lspci | grep -i 'nvidia'
+  ignore_errors: yes
+  register: have_gpu
+
+- name: Create non gpu /etc/docker/daemon.json
+  template:
+    src: docker_daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: 0755
+    owner: root
+    group: root
+  when: have_gpu.rc != 0
+  register: updated_docker_daemon
+
+- name: Create gpu /etc/docker/daemon.json
+  copy:
+    src: "daemon.gpu.json"
+    dest: /etc/docker/daemon.json
+  when: have_gpu.rc == 0
+  register: updated_gpu_docker_daemon
+
+- name: add docker group
+  group:
+    name: docker
+    state: present
+
+- name: Enable docker
+  service:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Restart docker
+  service:
+    name: docker
+    enabled: yes
+    state: restarted
+  when: updated_docker_daemon.changed or updated_gpu_docker_daemon.changed
