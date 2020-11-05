@@ -149,6 +149,12 @@ xhost +local:root
 To turn the current host into a Distance Assistant Kiosk, one can
 take advantage of the included ansible files.
 
+The kiosking process will alter the existing system to be a dedicated
+purpose device for running distance assistant, it will boot straight into
+a limited purpose window manager and run distance assistant in the background.
+
+It is not recommended to do this with a general use laptop or desktop.
+
 Requirements: Ubuntu 18.04.5 or higher on an x86/64 system matching the above
 hardware specifications.
 
@@ -205,6 +211,9 @@ https://ubuntu.com/tutorials/create-a-usb-stick-on-ubuntu#1-overview
 1. log in as provision/changeme
 2. Pull up a terminal window (Ctrl+Alt+T); or waffle, search for terminal
 
+### Download, clone, or copy this Repository to the Device
+
+Download or copy the data from this github repository onto the device.
 
 ### Install Ansible:
 
