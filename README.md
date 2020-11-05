@@ -227,11 +227,11 @@ sudo apt-get -y install ansible
 1. Edit the file distance_assistant_ansible/ansible/group_vars/all
 
 1. Change:
-    1. da_container_id: set this to the docker tag of the container to use. This defaults to the container built locally via [Build Instructions](#build-instructions) If left to defaults, ansible playbooks will build the container image locally.
+    1. da_container_id: set this to the docker tag of the container to use. This defaults to using local image built by the ansible playbooks or by following the [Build Instructions](#build-instructions)
 
        Hosting your container image on Dockerhub or AWS ECR will avoid having to build the container on each host.
 
-    2. dnsname_for_healthcheck: set this to the dnsname distance assistant should resolve to confirm that it had basic internet connectivity.
+    2. dnsname_for_healthcheck: set this to the dnsname distance assistant should resolve to confirm that it had basic internet connectivity. This defaults to "amazon.com"
 
 ### Use Ansible to Downgrade the Kernel
 
