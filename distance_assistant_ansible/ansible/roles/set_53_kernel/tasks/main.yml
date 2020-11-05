@@ -1,0 +1,43 @@
+---
+########################################
+#
+# Downgrade to 5.3.x kernel for
+# driver stability reasons
+#
+########################################
+
+- name: revert to 5.3.x kernel if running ubuntu 18.04.x
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_version == "18.04"
+  block:
+
+  - name: Install old kernel
+    when: ansible_distribution == "Ubuntu" and ansible_distribution_version == "18.04"
+    apt:
+      name:
+        - linux-image-5.3.0-62-generic
+        - linux-modules-5.3.0-62-generic
+        - linux-headers-5.3.0-62-generic
+        - linux-modules-extra-5.3.0-62-generic
+        - linux-firmware
+        - intel-microcode
+        - amd64-microcode
+        - dkms
+  - name: Remove new kernel
+    apt:
+      name:
+        - linux-generic-hwe-18.04
+        - linux-image-generic-hwe-18.04
+        - linux-headers-generic-hwe-18.04
+        - linux-*-5.4.*
+      state: absent
+
+  - name: kernel rollback
+    block:
+    - name: rebuild grub
+      shell: update-grub
+    - name: dkms autoinstall
+      shell: dkms autoinstall
+      ignore_errors: yes
+    - name: reboot
+      shell: reboot
+    when: ansible_kernel is version('5.4', '>=')

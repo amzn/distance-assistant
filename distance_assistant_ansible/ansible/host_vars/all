@@ -1,0 +1,3 @@
+ssm_region: "{{ ansible_env.AWS_SSM_REGION_NAME }}"
+ssm_id: "{{ ansible_env.AWS_SSM_INSTANCE_ID }}"
+

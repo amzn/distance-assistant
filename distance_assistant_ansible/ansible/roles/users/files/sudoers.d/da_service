@@ -1,0 +1,4 @@
+da ALL=NOPASSWD: /bin/systemctl restart da
+da ALL=NOPASSWD: /bin/systemctl start da
+da ALL=NOPASSWD: /bin/systemctl stop da
+da ALL=NOPASSWD: /bin/systemctl status da

@@ -1,0 +1,71 @@
+---
+########################################
+#
+# Compile drivers for Intel Realsense cameras
+#
+# NOTE: The dkms drivers provided by intel are confirmed to not be working with the Realsense DS435i
+# cameras. Specifically we see the errors detailed here: https://github.com/IntelRealSense/realsense-ros/issues/1106
+#
+# Intel does provide a process for manually compiling and installing the kernel modules.
+# We have verified self-compiled modules do remediate the issue. Since build process only
+# compiles the drivers needed by realsense it is not a full kernel compilation and we simply
+# build directly on the host.
+#
+#  References:
+#  dkms drivers (WORKING w/ rwb): https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+#  Manual driver compilation (WORKING): https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md
+#  DKMS: https://en.wikipedia.org/wiki/Dynamic_Kernel_Module_Support
+#
+########################################
+
+# We check if the modules were already installed. If they were
+# we check the kernel version they were installed for an it they differ
+# from the current kernel version. If they do differ we recompile the modules
+
+########################################
+#
+# add official repo drivers
+#
+########################################
+
+- name: add realsense-hw-public gpg key
+  when: ansible_distribution == "Ubuntu"
+  apt_key:
+    url: https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf6e65ac044f831ac80a06380c8b3a55a6f3efcde
+    id: F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+    state: present
+
+- name: add realsense-hw-public repository
+  when: ansible_distribution == "Ubuntu"
+  apt_repository:
+    repo: deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo bionic main
+    state: present
+    filename: realsense-hw-public
+    mode: 0644
+
+- name: install realsense software (takes a long time)
+  when: ansible_distribution == "Ubuntu"
+  apt:
+    name:
+      - librealsense2-utils
+      - librealsense2-dev
+    state: latest
+    update_cache: yes
+  ignore_errors: yes
+  register: have_apt_utils
+
+# Check if DKMS is already present
+- name: Gather package facts
+  package_facts:
+    manager: apt 
+
+- name: Install Intel Realsense DKMS drivers
+  when: 
+    - '"librealsense2-dkms" not in ansible_facts.packages'
+    - ansible_distribution == "Ubuntu"
+  apt:
+    name: librealsense2-dkms
+    state: latest
+    update_cache: yes
+  ignore_errors: yes
+

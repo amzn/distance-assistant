@@ -1,0 +1,15 @@
+# one liner for generating rules based on official Intel udev file
+# cat 99-realsense-libusb.rules | grep hid_sensor | sed 's/RUN.*/RUN+="/usr/local/bin/da_udev.sh"/'
+
+DRIVER=="hid_sensor_custom", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0ad5", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0af2", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor_custom", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0afe", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor_custom", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0aff", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor_custom", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b00", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor_custom", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b01", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b3a", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b3d", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b4b", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b4d", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b5b", RUN+="/usr/local/bin/da_udev.sh"
+DRIVER=="hid_sensor*", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b5c", RUN+="/usr/local/bin/da_udev.sh"

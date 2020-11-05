@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+# pass in anything to define a new instance
+# this will select rwb instead of ros for the default
+new_instance=${1:-}
+
+file=/home/da/.application.txt
+
+# pull from online
+
+# shellcheck disable=SC1083
+app=$( aws ssm --region {{ ssm_region }} list-tags-for-resource \
+	--resource-id {{ ssm_id }} \
+	--resource-type ManagedInstance | jq -r '.TagList[] |select(.Key|test("Application"))|.Value' ) || true
+
+# record it
+[ -z "$app" ] || echo "$app" > "$file"
+
+# check what's in the file (could be pulled from online or left on disk)
+app=$( cat "$file" || true )
+
+
+# if still not defined choose
+if [ -z "$app" ]; then
+	if [ -z "$new_instance" ]; then
+		app="ROS"
+	else
+		app="RWB"
+	fi
+	# Write chosen tag to SSM
+	# shellcheck disable=SC1083
+	aws ssm add-tags-to-resource --resource-type ManagedInstance --resource-id {{ ssm_id }} --tags "Key=Application,Value=$app" --region {{ ssm_region }} >&2 || true
+fi
+
+# record it
+[ -z "$app" ] || echo "$app" > "$file"
+
+echo "$app"

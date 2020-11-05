@@ -1,0 +1,15 @@
+[Unit]
+Description=Amazon Distance Assistant
+Documentation=https://github.com/amzn/distance-assistant
+Wants=network-online.target
+
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/run_da.sh
+ExecStop=/usr/local/bin/stop_da.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

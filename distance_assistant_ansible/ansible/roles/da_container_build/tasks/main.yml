@@ -1,0 +1,25 @@
+---
+########################################
+#
+# build DA container if set to do so
+#
+########################################
+
+- name: build distance distance_assistant container (takes a long time)
+  when: da_container_id == "distance_assistant/prototype"
+  block:
+  - name: install utilties
+    apt:
+      name:
+        - nvidia-container-runtime
+      state: present
+
+  - name: Download yolo4 model weights
+    get_url:
+      url: https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights
+      dest: "{{ distance_assistant_directory }}/distance_assistant/src/yolov4.weights"
+      mode: '0750'
+      timeout: 1500
+
+  - name: build distance assistant container (takes a long time)
+    shell: "docker build --network=host -t {{ da_container_id }} {{ distance_assistant_directory }}"

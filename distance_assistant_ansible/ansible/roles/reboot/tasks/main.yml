@@ -1,0 +1,18 @@
+---
+########################################
+#
+# all done, reboot
+#
+# this should be the last playbook
+#
+########################################
+
+  - name: create reboot file
+    copy:
+      dest: /etc/provisioning.completed
+      content: "all done"
+    register: provisioning_complete
+
+  - name: reboot after initial provisioning
+    shell: shutdown -r now Reboot to apply updates
+    when: provisioning_complete.changed

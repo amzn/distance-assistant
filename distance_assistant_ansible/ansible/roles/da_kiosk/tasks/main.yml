@@ -1,0 +1,79 @@
+---
+# uncomment this to call by itself
+# - hosts: all
+#   tasks:
+
+- name: Install kiosk packages
+  when: ansible_distribution == "Ubuntu"
+  apt:
+    name:
+      - lightdm
+      - xmonad
+      - gmrun
+      - unclutter
+      - hsetroot
+      - xcompmgr
+      - conky
+      - stalonetray
+- name: install lightdm config
+  copy:
+    src: "lightdm.conf"
+    dest: /etc/lightdm/lightdm.conf
+
+- name: create .xmonad directory
+  file:
+    path: "/home/da/.xmonad"
+    state: directory
+    owner: da
+    mode: 0755
+
+- name: install xmonad config
+  copy:
+    src: "xmonad.hs"
+    dest: /home/da/.xmonad/xmonad.hs
+    mode: 0644
+
+- name: install xmonad config
+  copy:
+    src: "conkyrc"
+    dest: /home/da/.conkyrc
+
+- name: install xmonad autostart script
+  copy:
+    src: "xmonad_autostart.sh"
+    dest: /home/da/.xmonad_autostart.sh
+    mode: 0755
+
+- name: install connection script
+  copy:
+    src: "connection_status.sh"
+    dest: /usr/local/bin/connection_status.sh
+    mode: 0755
+
+  # https://askubuntu.com/questions/1114525/reconfigure-the-display-manager-non-interactively
+- name: install default display manager file
+  copy:
+    src: "default-display-manager"
+    dest: /etc/X11/default-display-manager
+
+- name: execute debconf
+  shell: |
+    DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true dpkg-reconfigure lightdm
+    echo set shared/default-x-display-manager lightdm | debconf-communicate
+
+- name: disable gdm3
+  systemd:
+      name: gdm3
+      enabled: no
+
+- name: enable lightdm
+  systemd:
+      name: lightdm
+      enabled: yes
+
+- name: disable lid closing
+  lineinfile:
+    path: "/etc/systemd/logind.conf"
+    regexp: "HandleLidSwitch="
+    line: "HandleLidSwitch=ignore"
+    insertafter: "[Login]"

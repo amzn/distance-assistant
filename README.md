@@ -143,3 +143,120 @@ These errors mean that Docker does not have access to the X11 display server. To
 ```
 xhost +local:root
 ```
+
+# Distance Assistant Kiosk Setup
+
+To turn the current host into a Distance Assistant Kiosk, one can
+take advantage of the included ansible files.
+
+Requirements: Ubuntu 18.04.5 or higher on an x86/64 system matching the above
+hardware specifications.
+
+## Install Ubuntu
+
+### Configure BIOS
+Go into BIOS, disable secure boot, disable trusted computing
+
+### Download Ubuntu image
+
+Download an Ubuntu installation image, e.g. https://releases.ubuntu.com/18.04/ubuntu-18.04.5-desktop-amd64.iso
+
+Make sure that this is 18.04.5 or later; earlier versions likely won’t work
+
+### Create bootable image from it
+
+Follow this procedure:
+
+https://ubuntu.com/tutorials/create-a-usb-stick-on-ubuntu#1-overview
+
+### Perform the Installation
+
+1. Boot the image
+⋅⋅⋅May need to follow prompts on bios to select the USB disk..
+
+2. Select install Ubuntu
+
+3. Select English (US) keyboard layout
+
+4. Select “Minimal installation”
+
+5. Check download updates while installing
+
+6. Check install third-party software for graphics and wifi hardware
+
+7. If you see a checkbox for secure boot, reboot and go back to [Configure BIOS](#configure-bios)
+
+8. Select “Erase Disk and Install Ubuntu” (no LVM/Encryption)
+
+9. Select appropriate timezone
+
+10. Provide User Credentials
+    1. Your name: DistanceAssistant
+    2. Your Computer’s Name: dakiosk
+    3. Pick a username: provision
+    4. Choose a password: changeme
+    5. Confirm your password: changeme
+
+11. Let system install and restart
+
+### Log In
+<a name="Login"></a>
+
+1. log in as provision/changeme
+2. Pull up a terminal window (Ctrl+Alt+T); or waffle, search for terminal
+
+
+### Install Ansible:
+
+```
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt-get -y install ansible
+```
+
+### Edit group_vars
+
+1. Edit the file distance_assistant_ansible/ansible/group_vars/all
+
+1. Change:
+    1. da_container_id: set this to the docker tag of the container to use. This defaults to the container built locally via [Build Instructions](#build-instructions) If left to defaults, ansible playbooks will build the container image locally.
+
+       Hosting your container image on Dockerhub or AWS ECR will avoid having to build the container on each host.
+
+    2. dnsname_for_healthcheck: set this to the dnsname distance assistant should resolve to confirm that it had basic internet connectivity.
+
+### Use Ansible to Downgrade the Kernel
+
+Users have reported better stability with the 5.3.x kernels. The first step
+is using ansible to downgrade the kernel.
+
+
+This must be executed in the top level directory of this package.
+
+```
+sudo ansible-playbook -i "localhost," \
+    --extra-vars "base_dir=`pwd`" \
+    ./distance_assistant_ansible/ansible/all.yml \
+    --tags set_53_kernel
+```
+
+Once the playbook completes execution, the system will reboot.
+
+
+### Use Ansible to Run Kiosking Playbooks
+
+After the system comes back up, [log in again](#log-in) and run the rest of the kiosking playbooks.
+
+This must be executed in the top level directory of this package.
+
+```
+sudo ansible-playbook -i "localhost," \
+    --extra-vars "base_dir=`pwd`" \
+    ./distance_assistant_ansible/ansible/all.yml
+```
+
+### Finished
+
+When complete, the system should reboot to a blue screen and then start distance assistant. If you configured a remote repository, the station may need to download the image which will take some time.
+
+
+

@@ -1,0 +1,20 @@
+---
+########################################
+#
+# set up usb-reset
+#
+# note: realsense is usb-reset 8086:0b07
+#
+########################################
+
+# Install "foo" and "bar" snap
+- name: Install usb-reset
+  snap:
+    name:
+      - usb-reset
+
+- name: connect usb-reset:hardware-observe core:hardware-observe"
+  shell: "snap connect usb-reset:hardware-observe core:hardware-observe"
+
+- name: connect usb-reset:raw-usb core:raw-usb
+  shell: snap connect usb-reset:raw-usb core:raw-usb
