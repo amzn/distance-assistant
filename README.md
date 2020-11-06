@@ -215,6 +215,27 @@ https://ubuntu.com/tutorials/create-a-usb-stick-on-ubuntu#1-overview
 
 Download or copy the data from this github repository onto the device.
 
+1. Install git:
+```
+sudo apt-get install git
+```
+
+2. Get the repository URL. In the upper right of this github repository, click "code", and copy the download URL
+
+3. Clone the repository:
+
+```
+git clone <paste link copied from right pane here>
+```
+
+4. Change directory into the repository
+
+```
+cd distance-assistant
+```
+
+
+
 ### Install Ansible:
 
 ```
@@ -253,7 +274,7 @@ Once the playbook completes execution, the system will reboot.
 
 ### Use Ansible to Run Kiosking Playbooks
 
-After the system comes back up, [log in again](#log-in) and run the rest of the kiosking playbooks.
+After the system comes back up, [log in again](#log-in), cd into the distance-assistant directory and run the rest of the kiosking playbooks.
 
 This must be executed in the top level directory of this package.
 
