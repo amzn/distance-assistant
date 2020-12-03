@@ -300,3 +300,6 @@ sudo prime-select intel
 
 Then reboot
 
+### DA Doesn't go full screen
+
+This is mostly mitigated by having DA start with a small splash icon. If that doesn't fix it, you can force a screen resize by running a short lived xwindows app. Press "Left_ALT" and "x" at the same time and type "flash_logo.sh", that should display the splash screen again for 30 seconds, then the screen will correctly resize.
