@@ -67,6 +67,8 @@ then
        --env="DISPLAY=:0" \
        --env="QT_X11_NO_MITSHM=1" \
        --volume=/home/da/override:/override \
+       --volume=/tmp/sounds:/tmp/sounds:rw \
+       --volume=/var/log/da:/tmp/log:rw \
        --volume=/tmp/.X11-unix:/tmp/.X11-unix:rw \
        ${CONTAINER_ID}
 

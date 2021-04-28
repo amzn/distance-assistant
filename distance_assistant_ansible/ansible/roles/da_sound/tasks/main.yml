@@ -1,0 +1,34 @@
+---
+# uncomment this to call by itself
+# - hosts: all
+#   tasks:
+
+- name: Install sound packages
+  when: ansible_distribution == "Ubuntu"
+  apt:
+    name:
+      - sox
+
+- name: create da_alerts.py script
+  copy:
+    dest: /usr/local/bin/da_alerts.py
+    src: "da_alerts.py"
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Create da_sound.service
+  template:
+    src: da_sound_service.j2
+    dest: /lib/systemd/system/da_sound.service
+  register: service
+
+- name: reload systemctl
+  when: service.changed
+  shell: systemctl daemon-reload
+
+- name: Enable da_sound.service
+  service:
+    name: da_sound
+    enabled: yes
+    state: started
