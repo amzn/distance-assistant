@@ -1,8 +1,8 @@
 /var/log/da/da.log
 {
         copytruncate
-        hourly
-        rotate 672
+        daily
+        rotate 14
         delaycompress
         compress
         notifempty
