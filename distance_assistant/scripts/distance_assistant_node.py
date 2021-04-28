@@ -45,7 +45,7 @@ def parse_array_from_string(list_str, dtype=int):
 class DistanceAssistant:
     def __init__(self):
         """Initializes the ros node."""
-        self.last_log_line = None
+        self.last_log_scene = {}
         self.prev_time = time.time()
         self.init_params()
         self.person_detector = PersonDetector()
@@ -482,9 +482,11 @@ class DistanceAssistant:
         log_line = "%s RED: %d GREEN: %d\n" % (ts, nr_detections_dict["RED"], nr_detections_dict["GREEN"])
 
         # avoid writing the same thing non stop
-        if log_line != self.last_log_line:
+        # only log when the number of detected
+        # people changes, or changes state
+        if nr_detections_dict != self.last_log_scene:
             with open("/tmp/log/da.log", "a+") as f:
-                self.last_log_line = log_line
+                self.last_log_scene = nr_detections_dict
                 f.write(log_line)
 
     def compute_proximities(self, detections):
