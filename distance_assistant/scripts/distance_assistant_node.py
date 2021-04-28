@@ -21,6 +21,7 @@ from darknet_custom import *
 from cv_bridge import CvBridge, CvBridgeError
 from distance_assistant.msg import BboxMsg, DetectionMsg, DetectionsMsg
 import temporal_filter
+import datetime
 
 
 def parse_array_from_string(list_str, dtype=int):
@@ -44,6 +45,7 @@ def parse_array_from_string(list_str, dtype=int):
 class DistanceAssistant:
     def __init__(self):
         """Initializes the ros node."""
+        self.last_log_line = None
         self.prev_time = time.time()
         self.init_params()
         self.person_detector = PersonDetector()
@@ -470,6 +472,21 @@ class DistanceAssistant:
         msg.compute_time = compute_time
         self.detections_pub.publish(msg)
 
+    def perform_actions(self, nr_detections_dict):
+        if nr_detections_dict["RED"] > 0:
+            # touch the sound sentinel file
+            with open("/tmp/sounds/alerts", "w") as f:
+                f.write("")
+
+        ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        log_line = "%s RED: %d GREEN: %d\n" % (ts, nr_detections_dict["RED"], nr_detections_dict["GREEN"])
+
+        # avoid writing the same thing non stop
+        if log_line != self.last_log_line:
+            with open("/tmp/log/da.log", "a+") as f:
+                self.last_log_line = log_line
+                f.write(log_line)
+
     def compute_proximities(self, detections):
         """ For each person in detections computes the closest proximity to
         the other people in the scene and updates the detection attributes for
@@ -483,6 +500,11 @@ class DistanceAssistant:
 
         N = len(detections)
         distances = np.ones((N, N)) * np.inf
+        nr_detections_dict = {
+            "RED": 0,
+            "GREEN": 0,
+        }
+
         for i in range(N):
             for j in range(i + 1, N):
                 distances[i, j] = distance.euclidean(detections[i].centroid,
@@ -493,8 +515,12 @@ class DistanceAssistant:
 
             if detections[i].proximity < self.distance_thr:
                 detections[i].color = Color.RED
+                nr_detections_dict["RED"] += 1
             else:
                 detections[i].color = Color.GREEN
+                nr_detections_dict["GREEN"] += 1
+
+        self.perform_actions(nr_detections_dict)
 
     def rgb_depth_callback(self, rgb_msg, depth_msg):
         """Callback method for syncronized RGB + Depth image topics.

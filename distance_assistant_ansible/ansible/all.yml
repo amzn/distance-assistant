@@ -82,6 +82,13 @@
     tags:
       - da_kiosk
 
+  - include_role:
+      name: da_sound
+      apply:
+        tags:
+          - da_sound
+    tags:
+      - da_sound
 
 ##############################
 #

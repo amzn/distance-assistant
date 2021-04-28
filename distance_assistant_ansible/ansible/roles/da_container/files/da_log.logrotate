@@ -1,0 +1,11 @@
+/var/log/da/da.log
+{
+        copytruncate
+        hourly
+        rotate 672
+        delaycompress
+        compress
+        notifempty
+        missingok
+}
+

@@ -114,3 +114,13 @@
 - name: reload udev rules
   when: udev_rule.changed
   shell: udevadm control --reload-rules
+
+- name: install da logrotate config
+  copy:
+    src: da_log.logrotate
+    dest: /etc/logrotate.d/da_log
+    mode: 0644
+    owner: root
+    group: root
+
+
