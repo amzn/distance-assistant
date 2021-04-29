@@ -28,7 +28,15 @@
   shell: systemctl daemon-reload
 
 - name: Enable da_sound.service
+  when: enable_sound
   service:
     name: da_sound
     enabled: yes
     state: started
+
+- name: Disable da_sound.service
+  when: not enable_sound
+  service:
+    name: da_sound
+    enabled: no
+    state: stopped

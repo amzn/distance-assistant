@@ -254,6 +254,8 @@ sudo apt-get -y install ansible
 
     2. dnsname_for_healthcheck: set this to the dnsname distance assistant should resolve to confirm that it had basic internet connectivity. This defaults to "amazon.com"
 
+    3. set enable_sound to False if you do not want sound
+
 ### Use Ansible to Downgrade the Kernel
 
 Users have reported better stability with the 5.3.x kernels. The first step
@@ -307,3 +309,13 @@ This is mostly mitigated by having DA start with a small splash icon. If that do
 ### Error running ansible docker build
 
 If the nvidia drivers weren't installed/enabled there may be an error building the container for DA. Reboot your machine and rerun ansible.
+
+### I want to enable or disable sound
+
+Edit group_vars (per above), and change enable_sound to True or False depending upon if you want to enable or disable sound, then rerun ansible:
+
+```
+sudo ansible-playbook -i "localhost," \
+    --extra-vars "base_dir=`pwd`" \
+    ./distance_assistant_ansible/ansible/all.yml
+```

@@ -1,3 +1,4 @@
 dnsname_for_healthcheck: amazon.com
 da_container_id: distance_assistant/prototype
 distance_assistant_directory: "{{ base_dir }}"
+enable_sound: True
