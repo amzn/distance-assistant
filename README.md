@@ -314,8 +314,32 @@ If the nvidia drivers weren't installed/enabled there may be an error building t
 
 Edit group_vars (per above), and change enable_sound to True or False depending upon if you want to enable or disable sound, then rerun ansible:
 
+Note: you need to be logged in (ssh/etc) as the user with which you provisioned the device and/or a user with sudo rights.
+
 ```
 sudo ansible-playbook -i "localhost," \
     --extra-vars "base_dir=`pwd`" \
     ./distance_assistant_ansible/ansible/all.yml
 ```
+
+You can also disable/enable sound temporarily (will reset after reboot) by the following commands:
+
+Get Status:
+
+```
+sudo service da_sound status
+```
+
+Stop Sound:
+
+```
+sudo service da_sound stop
+```
+
+
+Start Sound:
+
+```
+sudo service_dad_sound start
+```
+
